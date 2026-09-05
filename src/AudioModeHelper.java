@@ -1,5 +1,3 @@
-package com.komori.audiofix;
-
 import android.content.Context;
 import android.media.AudioManager;
 import android.os.Looper;

@@ -5,6 +5,13 @@
 set -e
 
 ANDROID_SDK="${ANDROID_HOME:-$HOME/Android/Sdk}"
+if [ ! -f "$ANDROID_SDK/platforms/android-34/android.jar" ]; then
+    ANDROID_SDK="${LOCALAPPDATA:-/opt}/Android/Sdk"
+fi
+if [ ! -f "$ANDROID_SDK/platforms/android-34/android.jar" ]; then
+    echo "ERROR: Android SDK not found. Set ANDROID_HOME or install SDK to standard location."
+    exit 1
+fi
 ANDROID_JAR="$ANDROID_SDK/platforms/android-34/android.jar"
 D8="$ANDROID_SDK/build-tools/34.0.0/d8"
 SRC_DIR="src"
