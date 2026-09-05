@@ -1,0 +1,5 @@
+build/
+*.class
+*.dex
+*.zip
+*.log

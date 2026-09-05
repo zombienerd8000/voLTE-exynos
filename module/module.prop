@@ -1,0 +1,6 @@
+id=audio_mode_fix
+name=Audio Mode Fix (VoLTE Mic)
+version=1.0
+versionCode=1
+author=komori
+description=Forces MODE_IN_COMMUNICATION when system tries MODE_IN_CALL. Fixes PhhIms mic routing on Samsung Exynos.
