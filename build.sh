@@ -91,6 +91,7 @@ $ADB shell su -c "mkdir -p /data/adb/modules/audio_mode_fix/system/bin"
 $ADB shell su -c "mkdir -p /data/adb/modules/audio_mode_fix/system/etc/permissions"
 $ADB shell su -c "mkdir -p /data/adb/modules/audio_mode_fix/system/priv-app/PhhIms"
 $ADB shell su -c "mkdir -p /data/adb/modules/audio_mode_fix/system/product/overlay"
+$ADB shell su -c "mkdir -p /data/adb/modules/audio_mode_fix/product/overlay"
 
 # Push all files
 echo "       Pushing files..."
@@ -115,12 +116,14 @@ cp /data/local/tmp/android.hardware.telephony.ims.xml $MOD/system/etc/permission
 cp /data/local/tmp/privapp-permissions-phh.xml $MOD/system/etc/permissions/
 cp /data/local/tmp/PhhIms.apk $MOD/system/priv-app/PhhIms/
 cp /data/local/tmp/PhhImsOverlay.apk $MOD/system/product/overlay/
+cp /data/local/tmp/PhhImsOverlay.apk $MOD/product/overlay/
 chmod 755 $MOD/service.sh
 chmod 755 $MOD/post-fs-data.sh
 chmod 644 $MOD/system/bin/classes.dex
 chmod 644 $MOD/system/etc/permissions/*
 chmod 644 $MOD/system/priv-app/PhhIms/PhhIms.apk
 chmod 644 $MOD/system/product/overlay/PhhImsOverlay.apk
+chmod 644 $MOD/product/overlay/PhhImsOverlay.apk
 ' > /dev/null 2>&1
 
 echo "       Cleaning up temp files..."

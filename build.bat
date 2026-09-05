@@ -118,6 +118,7 @@ REM Create module directory structure
 %ADB% shell su -c "mkdir -p /data/adb/modules/audio_mode_fix/system/etc/permissions"
 %ADB% shell su -c "mkdir -p /data/adb/modules/audio_mode_fix/system/priv-app/PhhIms"
 %ADB% shell su -c "mkdir -p /data/adb/modules/audio_mode_fix/system/product/overlay"
+%ADB% shell su -c "mkdir -p /data/adb/modules/audio_mode_fix/product/overlay"
 
 REM Push all files
 echo        Pushing files...
@@ -128,11 +129,11 @@ echo        Pushing files...
 %ADB% push module\system\etc\permissions\android.hardware.telephony.ims.xml /data/local/tmp/ >nul 2>&1
 %ADB% push module\system\etc\permissions\privapp-permissions-phh.xml /data/local/tmp/ >nul 2>&1
 %ADB% push module\system\priv-app\PhhIms\PhhIms.apk /data/local/tmp/ >nul 2>&1
-%ADB% push module\system\product\overlay\PhhImsOverlay.apk /data/local/tmp/ >nul 2>&1
+%ADB% push module\product\overlay\PhhImsOverlay.apk /data/local/tmp/ >nul 2>&1
 
 REM Copy to module directory and set permissions
 echo        Setting up module...
-%ADB% shell su -c "MOD=/data/adb/modules/audio_mode_fix; cp /data/local/tmp/module.prop $MOD/; cp /data/local/tmp/service.sh $MOD/; cp /data/local/tmp/post-fs-data.sh $MOD/; cp /data/local/tmp/classes.dex $MOD/system/bin/; cp /data/local/tmp/android.hardware.telephony.ims.xml $MOD/system/etc/permissions/; cp /data/local/tmp/privapp-permissions-phh.xml $MOD/system/etc/permissions/; cp /data/local/tmp/PhhIms.apk $MOD/system/priv-app/PhhIms/; cp /data/local/tmp/PhhImsOverlay.apk $MOD/system/product/overlay/; chmod 755 $MOD/service.sh; chmod 755 $MOD/post-fs-data.sh; chmod 644 $MOD/system/bin/classes.dex; chmod 644 $MOD/system/etc/permissions/*; chmod 644 $MOD/system/priv-app/PhhIms/PhhIms.apk; chmod 644 $MOD/system/product/overlay/PhhImsOverlay.apk" >nul 2>&1
+%ADB% shell su -c "MOD=/data/adb/modules/audio_mode_fix; cp /data/local/tmp/module.prop $MOD/; cp /data/local/tmp/service.sh $MOD/; cp /data/local/tmp/post-fs-data.sh $MOD/; cp /data/local/tmp/classes.dex $MOD/system/bin/; cp /data/local/tmp/android.hardware.telephony.ims.xml $MOD/system/etc/permissions/; cp /data/local/tmp/privapp-permissions-phh.xml $MOD/system/etc/permissions/; cp /data/local/tmp/PhhIms.apk $MOD/system/priv-app/PhhIms/; cp /data/local/tmp/PhhImsOverlay.apk $MOD/system/product/overlay/; cp /data/local/tmp/PhhImsOverlay.apk $MOD/product/overlay/; chmod 755 $MOD/service.sh; chmod 755 $MOD/post-fs-data.sh; chmod 644 $MOD/system/bin/classes.dex; chmod 644 $MOD/system/etc/permissions/*; chmod 644 $MOD/system/priv-app/PhhIms/PhhIms.apk; chmod 644 $MOD/system/product/overlay/PhhImsOverlay.apk; chmod 644 $MOD/product/overlay/PhhImsOverlay.apk" >nul 2>&1
 
 if errorlevel 1 (
     echo ERROR: Failed to install module files.
