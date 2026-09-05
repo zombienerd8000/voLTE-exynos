@@ -87,11 +87,11 @@ echo "[4/4] Installing module on device..."
 echo ""
 
 # Create module directory structure
-$ADB shell su -c "mkdir -p /data/adb/modules/audio_mode_fix/system/bin"
-$ADB shell su -c "mkdir -p /data/adb/modules/audio_mode_fix/system/etc/permissions"
-$ADB shell su -c "mkdir -p /data/adb/modules/audio_mode_fix/system/priv-app/PhhIms"
-$ADB shell su -c "mkdir -p /data/adb/modules/audio_mode_fix/system/product/overlay"
-$ADB shell su -c "mkdir -p /data/adb/modules/audio_mode_fix/product/overlay"
+$ADB shell su -c "mkdir -p /data/adb/modules/volte-exynos/system/bin"
+$ADB shell su -c "mkdir -p /data/adb/modules/volte-exynos/system/etc/permissions"
+$ADB shell su -c "mkdir -p /data/adb/modules/volte-exynos/system/priv-app/PhhIms"
+$ADB shell su -c "mkdir -p /data/adb/modules/volte-exynos/system/product/overlay"
+$ADB shell su -c "mkdir -p /data/adb/modules/volte-exynos/product/overlay"
 
 # Push all files
 echo "       Pushing files..."
@@ -107,7 +107,7 @@ $ADB push module/product/overlay/PhhImsOverlay.apk /data/local/tmp/ > /dev/null 
 # Copy to module directory and set permissions
 echo "       Setting up module..."
 $ADB shell su -c '
-MOD=/data/adb/modules/audio_mode_fix
+MOD=/data/adb/modules/volte-exynos
 cp /data/local/tmp/module.prop $MOD/
 cp /data/local/tmp/service.sh $MOD/
 cp /data/local/tmp/post-fs-data.sh $MOD/

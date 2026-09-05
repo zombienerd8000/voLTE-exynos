@@ -1,105 +1,67 @@
-# Audio Mode Fix + PhhIms VoLTE for Samsung Exynos
+# VoLTE for Samsung Exynos — Custom ROM Calling Fix
 
-One-click Magisk/APatch module that gets VoLTE working on Samsung Exynos devices running LineageOS.
+**Enables phone calls on Samsung Exynos devices running LineageOS and other custom ROMs.**
 
-## What It Does
+When carriers shut down 2G/3G, Exynos devices on custom ROMs couldn't make calls. This fixes that. One click to install — PhhIms IMS, mic routing fix, permissions, overlay, all configured automatically.
 
-1. **Installs PhhIms** — open-source IMS implementation for VoLTE on custom ROMs
-2. **Fixes mic routing** — Samsung audio HAL forces `MODE_IN_CALL` which routes mic through modem. This module forces `MODE_IN_COMMUNICATION` so mic goes through AudioFlinger → PhhIms
-3. **Sets up permissions** — IMS feature declaration, privapp permissions, overlay, debug properties
+## The Problem
 
-## Requirements
+Samsung Exynos devices running LineageOS have two critical issues:
 
-- Samsung Exynos device (tested on SM-G988B / Galaxy S20 Ultra, Exynos 990)
-- LineageOS 23.2 (Android 16)
-- Root: APatch + KernelPatch or Magisk
+1. **No IMS** — ImsResolver never creates itself because the device tree is missing the `android.hardware.telephony.ims` feature declaration
+2. **Mic routing broken** — Samsung audio HAL forces `MODE_IN_CALL`, routing the mic through the modem instead of AudioFlinger. PhhIms captures audio via `AudioRecord`, which needs `MODE_IN_COMMUNICATION`. Result: you can hear the other party, they can't hear you.
+
+Without 2G/3G fallback, these phones literally cannot make calls.
+
+## What This Does
+
+| Component | What It Fixes |
+|-----------|---------------|
+| **PhhIms APK** | Open-source IMS implementation — enables VoLTE registration and call setup |
+| **IMS feature declaration** | Makes ImsResolver create itself at boot |
+| **Privapp permissions** | Grants PhhIms privileged APIs (BIND_IMS_SERVICE, etc.) |
+| **PhhImsOverlay** | Maps `config_ims_mmtel_package` to `me.phh.ims` |
+| **Audio mode fix** | Forces `MODE_IN_COMMUNICATION` when Samsung HAL tries `MODE_IN_CALL` — mic routes through AudioFlinger → PhhIms |
+| **Debug properties** | Enables VoLTE, WFC, and IMS on carrier config |
+| **Enhanced 4G mode** | Enables VoLTE in system settings |
 
 ## Quick Start
 
-### Build
+1. Enable USB debugging on your phone
+2. Connect via USB
+3. Run `build.bat` (Windows) or `./build.sh` (Linux/macOS)
 
-```bash
-# Linux/macOS
-chmod +x build.sh
-./build.sh
+That's it. The script builds everything from source, pushes to your phone, and reboots.
 
-# Windows
-build.bat
-```
-
-Requires JDK 17 and Android SDK (platforms;android-34, build-tools;34.0.0).
-
-### Install
-
-```bash
-# Push all module files
-adb shell su -c 'mkdir -p /data/adb/modules/audio_mode_fix/system/bin'
-adb shell su -c 'mkdir -p /data/adb/modules/audio_mode_fix/system/etc/permissions'
-adb shell su -c 'mkdir -p /data/adb/modules/audio_mode_fix/system/priv-app/PhhIms'
-adb shell su -c 'mkdir -p /data/adb/modules/audio_mode_fix/system/product/overlay'
-
-adb push module/module.prop /data/local/tmp/
-adb push module/service.sh /data/local/tmp/
-adb push module/post-fs-data.sh /data/local/tmp/
-adb push module/system/bin/classes.dex /data/local/tmp/
-adb push module/system/etc/permissions/android.hardware.telephony.ims.xml /data/local/tmp/
-adb push module/system/etc/permissions/privapp-permissions-phh.xml /data/local/tmp/
-adb push module/system/priv-app/PhhIms/PhhIms.apk /data/local/tmp/
-adb push module/system/product/overlay/PhhImsOverlay.apk /data/local/tmp/
-
-adb shell su -c '
-  MOD=/data/adb/modules/audio_mode_fix
-  cp /data/local/tmp/module.prop $MOD/
-  cp /data/local/tmp/service.sh $MOD/
-  cp /data/local/tmp/post-fs-data.sh $MOD/
-  cp /data/local/tmp/classes.dex $MOD/system/bin/
-  cp /data/local/tmp/android.hardware.telephony.ims.xml $MOD/system/etc/permissions/
-  cp /data/local/tmp/privapp-permissions-phh.xml $MOD/system/etc/permissions/
-  cp /data/local/tmp/PhhIms.apk $MOD/system/priv-app/PhhIms/
-  cp /data/local/tmp/PhhImsOverlay.apk $MOD/system/product/overlay/
-  chmod 755 $MOD/service.sh
-  chmod 755 $MOD/post-fs-data.sh
-  chmod 644 $MOD/system/bin/classes.dex
-  chmod 644 $MOD/system/etc/permissions/*
-  chmod 644 $MOD/system/priv-app/PhhIms/PhhIms.apk
-  chmod 644 $MOD/system/product/overlay/PhhImsOverlay.apk
-'
-adb reboot
-```
+**Requirements:** JDK 17, Android SDK, ADB, rooted Samsung Exynos phone (APatch or Magisk), LineageOS 23.2.
 
 ## How It Works
 
-### Audio Fix (service.sh + classes.dex)
+### Audio Fix
 
 Samsung audio HAL forces `MODE_IN_CALL` when a call starts, routing mic through modem:
 
 ```
-Mic → TDM_DEMUX3 → VSS_TXADAPTER → MCD_TXSE1 → VSSIF_TX → Modem
+Mic → TDM_DEMUX3 → VSS_TXADAPTER → MCD_TXSE1 → VSSIF_TX → Modem (silence to PhhIms)
 ```
 
-A persistent Java watcher (via `app_process`) polls `AudioManager.getMode()` every 50ms. When it detects `MODE_IN_CALL`, it immediately forces `MODE_IN_COMMUNICATION` and enables speaker:
+A persistent Java watcher polls `AudioManager.getMode()` every 50ms via `app_process`. When it detects `MODE_IN_CALL`, it immediately forces `MODE_IN_COMMUNICATION` and enables speaker:
 
 ```
 Mic → TDM_DEMUX3 → VSS_TXADAPTER → MCD_DNN → MCD_TXSE2 → CHMATCHER → VPCMIN_DAI0 → AudioFlinger → PhhIms
 ```
 
-### PhhIms Installation (post-fs-data.sh)
+### PhhIms Installation
 
-Copies PhhIms as a system priv-app and installs:
-- `android.hardware.telephony.ims.xml` — makes ImsResolver create itself
-- `privapp-permissions-phh.xml` — allows PhhIms to use privileged APIs
-- `PhhImsOverlay.apk` — maps `config_ims_mmtel_package` to `me.phh.ims`
-- Debug properties for VoLTE enablement
+Post-fs-data script installs PhhIms as system priv-app with IMS feature declaration, permissions, and overlay. Framework binds to PhhIms as MmTel provider.
 
 ## Verification
-
-After reboot and during a call:
 
 ```bash
 # Check the audio fix log
 adb shell su -c 'cat /data/local/tmp/audiomodefix.log'
 
-# Check audio mode
+# Check audio mode during call
 adb shell dumpsys audio | grep "Requested mode"
 # Should show: MODE_IN_COMMUNICATION
 
@@ -107,25 +69,31 @@ adb shell dumpsys audio | grep "Requested mode"
 adb shell dumpsys telephony.registry | grep -i "ims"
 ```
 
+## Compatibility
+
+- **Devices:** Samsung Galaxy S20/S21/S22 series (Exynos), A-series, M-series
+- **ROMs:** LineageOS 23.2 (Android 16), likely works on other AOSP-based ROMs
+- **Root:** APatch + KernelPatch or Magisk
+- **Tested on:** SM-G988B (Galaxy S20 Ultra), Exynos 990, Telia Norway
+
 ## What's Included
 
 | File | Purpose |
 |------|---------|
-| `src/AudioModeHelper.java` | Java watcher source |
-| `module/service.sh` | Boot service (launches audio watcher) |
-| `module/post-fs-data.sh` | Installs PhhIms + permissions at boot |
-| `module/module.prop` | Magisk module metadata |
-| `module/system/bin/classes.dex` | Compiled audio watcher |
+| `src/AudioModeHelper.java` | Java watcher — forces MODE_IN_COMMUNICATION + speaker |
+| `module/service.sh` | Boot service — launches audio watcher, restarts if killed |
+| `module/post-fs-data.sh` | Installs PhhIms + permissions + overlay + properties |
+| `module/system/priv-app/PhhIms/PhhIms.apk` | Patched PhhIms (Android 16, sharedUserId removed) |
 | `module/system/etc/permissions/android.hardware.telephony.ims.xml` | IMS feature declaration |
-| `module/system/etc/permissions/privapp-permissions-phh.xml` | Privileged permissions |
-| `module/system/priv-app/PhhIms/PhhIms.apk` | Patched PhhIms (Android 16 compatible) |
-| `module/system/product/overlay/PhhImsOverlay.apk` | Framework overlay for MmTel provider |
+| `module/system/etc/permissions/privapp-permissions-phh.xml` | Privileged permissions for PhhIms |
+| `module/product/overlay/PhhImsOverlay.apk` | Framework overlay for MmTel provider |
+| `build.bat` / `build.sh` | One-click build + install |
 
 ## Credits
 
-- komori (myself) — discovery, testing, and implementation
-- phhusson — PhhIms project
-- JingMatrix — Vector/LSPosed fork (investigated but not used)
+- **komori (myself)** — discovery, testing, and implementation
+- **phhusson** — PhhIms project
+- **JingMatrix** — Vector/LSPosed fork (investigated but not used)
 
 ## License
 

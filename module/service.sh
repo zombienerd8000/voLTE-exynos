@@ -2,7 +2,7 @@
 # Audio Mode Fix - Magisk/APatch service script
 # Launches persistent Java watcher to fix Samsung Exynos mic routing
 MODDIR="${0%/*}"
-LOGFILE="/data/local/tmp/audiomodefix.log"
+LOGFILE="/data/local/tmp/volte-exynos.log"
 HELPER="$MODDIR/system/bin/classes.dex"
 
 log() {

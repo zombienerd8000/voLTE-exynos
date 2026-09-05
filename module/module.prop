@@ -1,6 +1,6 @@
-id=audio_mode_fix
-name=Audio Mode Fix + PhhIms VoLTE
+id=volte-exynos
+name=VoLTE for Samsung Exynos
 version=1.0
 versionCode=1
 author=komori
-description=Fixes Samsung Exynos mic routing + installs PhhIms for VoLTE on LineageOS. Requires reboot.
+description=Enables phone calls on Samsung Exynos devices running LineageOS and custom ROMs. PhhIms + mic routing fix.
