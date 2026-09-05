@@ -102,7 +102,7 @@ $ADB push module/system/bin/classes.dex /data/local/tmp/ > /dev/null 2>&1
 $ADB push module/system/etc/permissions/android.hardware.telephony.ims.xml /data/local/tmp/ > /dev/null 2>&1
 $ADB push module/system/etc/permissions/privapp-permissions-phh.xml /data/local/tmp/ > /dev/null 2>&1
 $ADB push module/system/priv-app/PhhIms/PhhIms.apk /data/local/tmp/ > /dev/null 2>&1
-$ADB push module/system/product/overlay/PhhImsOverlay.apk /data/local/tmp/ > /dev/null 2>&1
+$ADB push module/product/overlay/PhhImsOverlay.apk /data/local/tmp/ > /dev/null 2>&1
 
 # Copy to module directory and set permissions
 echo "       Setting up module..."
