@@ -83,11 +83,32 @@ adb shell dumpsys telephony.registry | grep -i "ims"
 | `src/AudioModeHelper.java` | Java watcher — forces MODE_IN_COMMUNICATION + speaker |
 | `module/service.sh` | Boot service — launches audio watcher, restarts if killed |
 | `module/post-fs-data.sh` | Installs PhhIms + permissions + overlay + properties |
-| `module/system/priv-app/PhhIms/PhhIms.apk` | Patched PhhIms (Android 16, sharedUserId removed) |
+| `module/system/priv-app/PhhIms/PhhIms.apk` | PhhIms (BIND_IMS_SERVICE on service, no sharedUserId) |
 | `module/system/etc/permissions/android.hardware.telephony.ims.xml` | IMS feature declaration |
 | `module/system/etc/permissions/privapp-permissions-phh.xml` | Privileged permissions for PhhIms |
-| `module/product/overlay/PhhImsOverlay.apk` | Framework overlay for MmTel provider |
+| `module/product/overlay/PhhImsOverlay.apk` | Framework overlay for MmTel provider (MUST be in product/ for Magisk mount) |
+| `module/system/product/overlay/PhhImsOverlay.apk` | Same overlay (system path fallback) |
 | `build.bat` / `build.sh` | One-click build + install |
+
+## Windows / CRLF Warning
+
+`*.sh` files in this repo are LF. If you edit or re-clone on Windows with
+`core.autocrlf=true`, git may write CRLF line endings into `service.sh` /
+`post-fs-data.sh`, which makes `sh` throw `syntax error: unmatched if` on the
+device and the watcher will never start. The `.gitattributes` file forces LF on
+checkout, but if you are packaging your own zip:
+
+- After cloning, verify with: `git config core.autocrlf false` (or just don't
+  re-touch the `.sh` files).
+- Check before flashing: the `service.sh` inside your zip must contain no CR
+  bytes:
+  ```powershell
+  # in PowerShell, after extracting service.sh:
+  ([System.IO.File]::ReadAllBytes('service.sh') | Where-Object { $_ -eq 13 }).Count   # must be 0
+  ```
+- Build zips with forward-slash paths (PowerShell `Compress-Archive` uses
+  backslashes, which Magisk rejects). The provided `build.bat` uses a
+  stdlib zip routine with forward slashes.
 
 ## Credits
 
