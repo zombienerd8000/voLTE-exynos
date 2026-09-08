@@ -1,0 +1,5 @@
+# Lock shell scripts to LF so git on Windows can't corrupt them
+*.sh text eol=lf
+*.bat text eol=crlf
+*.py text eol=lf
+*.java text eol=lf
